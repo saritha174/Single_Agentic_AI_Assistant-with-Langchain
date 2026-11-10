@@ -1,0 +1,12 @@
+python-dotenv
+tavily-python
+langchain-openai
+requests==2.31.0
+langchain-anthropic
+langchainhub
+streamlit
+langchain
+langchain-community
+langchain-core
+langchain-anthropic
+langchain-openai
