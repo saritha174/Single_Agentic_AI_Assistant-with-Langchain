@@ -36,7 +36,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("🤖 Agentic AI Assistant")
+st.title("Agentic AI Application")
 st.markdown("Search + Weather AI Agent using LangChain")
 
 # ==========================================
