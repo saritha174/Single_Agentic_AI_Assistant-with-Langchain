@@ -1,0 +1,51 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------------- CI: check the code ----------------
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint (catch syntax errors & undefined names)
+        run: ruff check . --select E9,F63,F7,F82
+
+      - name: Check all Python files compile
+        run: python -m compileall -q -x '(\.venv|venv)' .
+
+      - name: Run tests
+        run: |
+          if [ -d tests ]; then pytest -v; else echo "No tests folder yet - skipping"; fi
+
+  # ---------------- CD: deploy only if CI passed ----------------
+  deploy:
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL not set - skipping deploy"; exit 0
+          fi
+          curl -sf -X POST "$HOOK"
+          echo "Deploy triggered ✅"
